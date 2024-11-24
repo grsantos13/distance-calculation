@@ -21,7 +21,8 @@ public class DistanceResource {
             @RequestParam("latitudeStart") BigDecimal latitudeStart,
             @RequestParam("longitudeStart") BigDecimal longitudeStart,
             @RequestParam("latitudeEnd") BigDecimal latitudeEnd,
-            @RequestParam("longitudeEnd") BigDecimal longitudeEnd
+            @RequestParam("longitudeEnd") BigDecimal longitudeEnd,
+            @RequestParam(value = "unit", required = false, defaultValue = "KM") Unit unit
     ) {
         var start = new GeographicLocation(latitudeStart, longitudeStart);
         var end = new GeographicLocation(latitudeEnd, longitudeEnd);
@@ -36,11 +37,11 @@ public class DistanceResource {
                 + Math.cos(latitudeStartRadians) * Math.cos(latitudeEndRadians)
                 * Math.pow(Math.sin(deltaLongitude / 2), 2);
         var c = 2 * FastMath.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        var d = EARTH_RADIUS * c;
+        var d = BigDecimal.valueOf(EARTH_RADIUS * c);
 
         // business rule to round always up
-        var distance = BigDecimal.valueOf(d)
+        var convertedDistance = unit.convert(d)
                 .setScale(0, RoundingMode.CEILING);
-        return new DistanceRespose(distance, Unit.KM);
+        return new DistanceRespose(convertedDistance, unit);
     }
 }
